@@ -1,4 +1,4 @@
-# Fluid Genetic algorithm
+# Fluid Genetic Algorithm
 
 In this repository there are two attempt to use FGA for solving Vehicle Routing Problems
 
