@@ -1,4 +1,4 @@
-# VPR.Fluid_Genetic_algorithm
+# Fluid_Genetic_algorithm
 
 In this repository there are two attempt to use FGA for solving Vehicle Routing Problems
 
