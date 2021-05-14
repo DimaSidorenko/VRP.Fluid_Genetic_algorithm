@@ -48,7 +48,7 @@ struct Chromosome {
 		this->N = N;
 
 		Genes.resize(N);
-		for (int i = 0; i < N; i++) {
+		for (size_t i = 0; i < N; i++){
 			Genes[i] = Gene(N);
 		}
 	}
@@ -154,11 +154,6 @@ struct Individual {
 			used[key[randVal]] = true;
 		}
 
-		//for (auto to : seq) {
-		//	cout << to << ' ';
-		//}
-		//cout << '\n';
-
 		return seq;
 	}
 
@@ -166,9 +161,6 @@ struct Individual {
 		int n = seq.size();
 		vector<bool> used(n, false);
 		vector<int> res;
-
-
-		//iota(res.begin(), res.end(), 1);
 
 		//It may be possible to solve this in O(n * logn) time.
 		for (int i = 0; i < n; i++) {
@@ -218,39 +210,6 @@ Chromosome Crossover(Individual& parent1, Individual& parent2) {
 	for (int i = crossoverPoint; i < n; i++) {
 		result.Chr.Genes[i] = par2->Chr.Genes[i];
 	}
-
-
-	//Recalc chromosome probabilities using individual LR
-
-	//for (int i = 0; i < n; i++) {
-	//	int seqValue = result.EncodedSeq[i] - 1;
-
-	//	double iLR = SolverFluidGenetic::individualLR;
-	//	double DR = SolverFluidGenetic::diversityRate;
-
-	//	UpdateProbability(result.Chr.Genes[i].probabilities[seqValue], sqrt(n) * iLR, DR);
-	//}
-
-
-	//for (int i = 0; i < n; i++) {
-	//	int seqValue = result.EncodedSeq[i] - 1;
-	//	auto prob = result.Chr.Genes[i].probabilities;
-	//	
-	//	assert(n >= 2);
-
-	//	double iLR = SolverFluidGenetic::individualLR;
-	//	double DR = SolverFluidGenetic::diversityRate;
-
-	//	UpdateProbability(prob[seqValue], iLR, DR);
-	//	double decreaseValue = -iLR / double(n - 1);
-	//	for (int j = 0; j < prob.size(); j++) {
-	//		if (j != seqValue) {
-	//			UpdateProbability(prob[j], decreaseValue, DR);
-	//		}
-	//	}
-	//
-	//	result.Chr.Genes[i].probabilities = prob;
-	//}
 
 	return result.Chr;
 }
@@ -367,30 +326,16 @@ bool SolverFluidGeneticSecond::Solve(InputData& input, int populationSize, int c
 	vector<Chromosome> chrs(N, Chromosome(cnt_vertices));
 	blueprint = Chromosome(cnt_vertices);
 
-	//cout << "-------------------Init Population-----------------------\n";
-	//printPopulation(chrs, input);
-
-	//probability depends on individual's fitness
-	vector<double> probabilities(N);
-
-	Individual answer;
-
 	double iLR = SolverFluidGeneticSecond::individualLR;
 	double DR = SolverFluidGeneticSecond::diversityRate;
 
-	int timeLimit = 10;
-
-	double startT = clock();
 	int numIteration = 0;
 
-	//ofstream fout("output1.txt");
-	//ofstream fout("C:/Users/dimas/Desktop/Jupiter/output_second.txt");
+	ofstream mean_second("mean_second.txt");
+	ofstream best_second("best_second.txt");
 
-	ofstream mean_second("C:/Users/dimas/Desktop/Jupiter/mean_second.txt");
-	ofstream best_second("C:/Users/dimas/Desktop/Jupiter/best_second.txt");
+	Individual best_individual;
 
-
-	//while (clock() - startT < timeLimit * CLOCKS_PER_SEC) {
 	while (numIteration < cntIteration) {
 		numIteration++;
 
@@ -437,7 +382,6 @@ bool SolverFluidGeneticSecond::Solve(InputData& input, int populationSize, int c
 
 		//calc probability for every individuals to particapate in replication
 		//using inverse coefficients because we need to minimize individuals fitnesses
-
 		double meanFitness = 0.0;
 		int bestFitness = INT_MAX;
 		for (int i = 0; i < N; i++) {
@@ -446,8 +390,8 @@ bool SolverFluidGeneticSecond::Solve(InputData& input, int populationSize, int c
 
 			bestFitness = min(bestFitness, ind.Fitness);
 
-			if (ind.Fitness < answer.Fitness) {
-				answer = ind;
+			if (ind.Fitness < best_individual.Fitness) {
+				best_individual = ind;
 			}
 		}
 
@@ -455,12 +399,17 @@ bool SolverFluidGeneticSecond::Solve(InputData& input, int populationSize, int c
 		if (numIteration % 50 == 0) {
 			cout << numIteration << ' ' << meanFitness << ' ' << bestFitness << '\n';
 		}
-		//cout << numIteration << ' ' << meanFitness << ' ' << bestFitness << '\n';
+		
 		mean_second << numIteration << ' ' << meanFitness << '\n';
 		best_second << numIteration << ' ' << bestFitness << '\n';
+		
+		//cout << numIteration << ' ' << meanFitness << ' ' << bestFitness << '\n';
 		//cout << numIteration << ' ' << meanFitness << '\n';
 
 
+		//probabilities to become a parent
+		//depends on individual's fitness
+		vector<double> probabilities(N);
 		for (int i = 0; i < N; i++) {
 			probabilities[i] = (1.0 / double(population[i].Fitness))  / meanFitness;
 		}
@@ -482,10 +431,9 @@ bool SolverFluidGeneticSecond::Solve(InputData& input, int populationSize, int c
 		}
 	}
 
-	//cout << "-------------------Finish Population----------------------------\n";
-	//printPopulation(chrs, input);
+	//Printing results of algorithm
 	cout << "Fluid Genetic Second:\n";
-	cout << "Fitness = " << answer.Fitness << '\n';
+	cout << "Fitness = " << best_individual.Fitness << '\n';
 	cout << "Iteration Count = " << numIteration << "\n\n";
 
 	mean_second.close();
